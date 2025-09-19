@@ -335,6 +335,7 @@ $selectedCategory = $selectedCategory ?? null;
         <?php foreach ($products['data'] as $product): ?>
         <div class="col-lg-4 col-md-6 col-sm-6 product-item">
           <div class="product-card bg-white rounded-3 shadow-sm overflow-hidden h-100">
+            <a href="<?= url('products/' . $product['slug']) ?>" class="text-decoration-none">
             <div class="product-image position-relative">
               <?php
               $productModel = new App\Models\Product();
@@ -357,15 +358,11 @@ $selectedCategory = $selectedCategory ?? null;
               
               <div class="product-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">
                 <div class="btn-group">
-                  <a href="<?= url('products/' . $product['slug']) ?>" class="btn btn-primary btn-sm">
-                    <i class="fas fa-eye"></i>
-                    <span class="d-none d-sm-inline ms-1">View</span>
-                  </a>
-                  <button type="button" class="btn btn-outline-primary btn-sm add-to-cart-btn" 
+                  <button type="button" class="btn btn-primary btn-sm add-to-cart-btn" 
                           data-product-id="<?= $product['id'] ?>" 
                           <?= $product['stock_quantity'] <= 0 ? 'disabled' : '' ?>>
                     <i class="fas fa-cart-plus"></i>
-                    <span class="d-none d-sm-inline ms-1">Cart</span>
+                    <span class="d-none d-sm-inline ms-1">Add</span>
                   </button>
                 </div>
               </div>
@@ -419,16 +416,23 @@ $selectedCategory = $selectedCategory ?? null;
                 </div>
               </div>
               
-              <form class="add-to-cart-form" data-product-id="<?= $product['id'] ?>">
-                <?= csrfField() ?>
-                <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
-                <input type="hidden" name="quantity" value="1">
-                <button type="submit" class="btn btn-primary w-100" <?= $product['stock_quantity'] <= 0 ? 'disabled' : '' ?>>
-                  <i class="fas fa-cart-plus me-2"></i>
-                  <?= $product['stock_quantity'] > 0 ? 'Add to Cart' : 'Out of Stock' ?>
-                </button>
-              </form>
+              <div class="d-flex gap-2">
+                <form class="add-to-cart-form flex-fill" data-product-id="<?= $product['id'] ?>">
+                  <?= csrfField() ?>
+                  <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
+                  <input type="hidden" name="quantity" value="1">
+                  <button type="submit" class="btn btn-outline-primary w-100" <?= $product['stock_quantity'] <= 0 ? 'disabled' : '' ?>>
+                    <i class="fas fa-cart-plus me-2"></i>
+                    <?= $product['stock_quantity'] > 0 ? 'Add to Cart' : 'Out of Stock' ?>
+                  </button>
+                </form>
+                <a href="<?= url('checkout?product=' . $product['id'] . '&quantity=1') ?>" class="btn btn-primary" <?= $product['stock_quantity'] <= 0 ? 'onclick="return false;"' : '' ?>>
+                  <i class="fas fa-shopping-cart me-2"></i>
+                  Buy Now
+                </a>
+              </div>
             </div>
+            </a>
           </div>
         </div>
         <?php endforeach; ?>

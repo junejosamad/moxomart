@@ -60,12 +60,19 @@ class Router
     public function handleRequest()
     {
         $requestMethod = $_SERVER['REQUEST_METHOD'];
-        $requestPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         
-        // Remove the base path if running in a subdirectory
-        $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
-        if ($basePath !== '/' && strpos($requestPath, $basePath) === 0) {
-            $requestPath = substr($requestPath, strlen($basePath));
+        // Get URL from query parameter (set by .htaccess rewrite)
+        $requestPath = $_GET['url'] ?? '';
+        
+        // If no URL parameter, try to get from REQUEST_URI
+        if (empty($requestPath)) {
+            $requestPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+            
+            // Remove the base path if running in a subdirectory
+            $basePath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
+            if ($basePath !== '/' && strpos($requestPath, $basePath) === 0) {
+                $requestPath = substr($requestPath, strlen($basePath));
+            }
         }
         
         // Ensure path starts with /

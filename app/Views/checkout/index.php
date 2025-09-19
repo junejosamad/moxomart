@@ -48,6 +48,40 @@ include APP_PATH . '/Views/layouts/header.php';
                                 Shipping Information
                             </h5>
                             
+                            <?php if ($isGuest): ?>
+                            <!-- Guest User Form -->
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                You're checking out as a guest. Please provide your contact information.
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="first_name" class="form-label">First Name *</label>
+                                    <input type="text" class="form-control" id="first_name" name="first_name" 
+                                           value="<?= htmlspecialchars($old['first_name'] ?? '') ?>" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="last_name" class="form-label">Last Name *</label>
+                                    <input type="text" class="form-control" id="last_name" name="last_name" 
+                                           value="<?= htmlspecialchars($old['last_name'] ?? '') ?>" required>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="email" class="form-label">Email Address *</label>
+                                    <input type="email" class="form-control" id="email" name="email" 
+                                           value="<?= htmlspecialchars($old['email'] ?? '') ?>" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="phone" class="form-label">Phone Number *</label>
+                                    <input type="tel" class="form-control" id="phone" name="phone" 
+                                           value="<?= htmlspecialchars($old['phone'] ?? '') ?>" required>
+                                </div>
+                            </div>
+                            <?php else: ?>
+                            <!-- Logged-in User Form -->
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="first_name" class="form-label">First Name *</label>
@@ -73,40 +107,45 @@ include APP_PATH . '/Views/layouts/header.php';
                                            value="<?= htmlspecialchars($user['phone'] ?? '') ?>" required>
                                 </div>
                             </div>
+                            <?php endif; ?>
 
                             <div class="mb-3">
                                 <label for="address" class="form-label">Street Address *</label>
                                 <input type="text" class="form-control" id="address" name="address" 
+                                       value="<?= htmlspecialchars($old['address'] ?? '') ?>"
                                        placeholder="House number and street name" required>
                             </div>
 
                             <div class="mb-3">
                                 <label for="address2" class="form-label">Apartment, suite, etc. (optional)</label>
                                 <input type="text" class="form-control" id="address2" name="address2" 
+                                       value="<?= htmlspecialchars($old['address2'] ?? '') ?>"
                                        placeholder="Apartment, suite, unit, building, floor, etc.">
                             </div>
 
                             <div class="row mb-3">
                                 <div class="col-md-4">
                                     <label for="city" class="form-label">City *</label>
-                                    <input type="text" class="form-control" id="city" name="city" required>
+                                    <input type="text" class="form-control" id="city" name="city" 
+                                           value="<?= htmlspecialchars($old['city'] ?? '') ?>" required>
                                 </div>
                                 <div class="col-md-4">
                                     <label for="state" class="form-label">State/Province *</label>
                                     <select class="form-select" id="state" name="state" required>
                                         <option value="">Select State</option>
-                                        <option value="Punjab">Punjab</option>
-                                        <option value="Sindh">Sindh</option>
-                                        <option value="KPK">Khyber Pakhtunkhwa</option>
-                                        <option value="Balochistan">Balochistan</option>
-                                        <option value="Gilgit-Baltistan">Gilgit-Baltistan</option>
-                                        <option value="AJK">Azad Jammu & Kashmir</option>
-                                        <option value="Islamabad">Islamabad Capital Territory</option>
+                                        <option value="Punjab" <?= ($old['state'] ?? '') === 'Punjab' ? 'selected' : '' ?>>Punjab</option>
+                                        <option value="Sindh" <?= ($old['state'] ?? '') === 'Sindh' ? 'selected' : '' ?>>Sindh</option>
+                                        <option value="KPK" <?= ($old['state'] ?? '') === 'KPK' ? 'selected' : '' ?>>Khyber Pakhtunkhwa</option>
+                                        <option value="Balochistan" <?= ($old['state'] ?? '') === 'Balochistan' ? 'selected' : '' ?>>Balochistan</option>
+                                        <option value="Gilgit-Baltistan" <?= ($old['state'] ?? '') === 'Gilgit-Baltistan' ? 'selected' : '' ?>>Gilgit-Baltistan</option>
+                                        <option value="AJK" <?= ($old['state'] ?? '') === 'AJK' ? 'selected' : '' ?>>Azad Jammu & Kashmir</option>
+                                        <option value="Islamabad" <?= ($old['state'] ?? '') === 'Islamabad' ? 'selected' : '' ?>>Islamabad Capital Territory</option>
                                     </select>
                                 </div>
                                 <div class="col-md-4">
                                     <label for="postal_code" class="form-label">Postal Code *</label>
-                                    <input type="text" class="form-control" id="postal_code" name="postal_code" required>
+                                    <input type="text" class="form-control" id="postal_code" name="postal_code" 
+                                           value="<?= htmlspecialchars($old['postal_code'] ?? '') ?>" required>
                                 </div>
                             </div>
 

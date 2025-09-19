@@ -1,0 +1,16 @@
+# Simple .htaccess test file
+# Upload this to your cPanel root directory and rename to .htaccess
+
+# Basic rewrite rules
+RewriteEngine On
+
+# Test if .htaccess is working
+# This should redirect /test to /public/test
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ public/$1 [L]
+
+# Add some basic security headers
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options nosniff
+</IfModule> 

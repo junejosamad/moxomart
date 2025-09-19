@@ -42,9 +42,7 @@ $currentYear = date('Y');
           <ul class="list-unstyled">
             <li class="mb-2"><a href="<?= url() ?>" class="text-muted text-decoration-none">Home</a></li>
             <li class="mb-2"><a href="<?= url('products') ?>" class="text-muted text-decoration-none">Shop</a></li>
-            <li class="mb-2"><a href="<?= url('how-to') ?>" class="text-muted text-decoration-none">How to</a></li>
-            <li class="mb-2"><a href="<?= url('fbs') ?>" class="text-muted text-decoration-none">FBS</a></li>
-            <li class="mb-2"><a href="<?= url('affiliate') ?>" class="text-muted text-decoration-none">Affiliate Program</a></li>
+            <li class="mb-2"><a href="<?= url('contact') ?>" class="text-muted text-decoration-none">Contact</a></li>
           </ul>
         </div>
         
@@ -70,7 +68,6 @@ $currentYear = date('Y');
         <div class="col-lg-2 col-md-6 mb-4">
           <h6 class="fw-bold mb-3">Customer Service</h6>
           <ul class="list-unstyled">
-            <li class="mb-2"><a href="<?= url('faq') ?>" class="text-muted text-decoration-none">FAQ</a></li>
             <li class="mb-2"><a href="<?= url('shipping-info') ?>" class="text-muted text-decoration-none">Shipping Info</a></li>
             <li class="mb-2"><a href="<?= url('returns') ?>" class="text-muted text-decoration-none">Returns</a></li>
             <li class="mb-2"><a href="<?= url('privacy-policy') ?>" class="text-muted text-decoration-none">Privacy Policy</a></li>
@@ -84,15 +81,15 @@ $currentYear = date('Y');
           <div class="text-muted">
             <div class="mb-2">
               <i class="fas fa-map-marker-alt me-2"></i>
-              <small><?= getSetting('contact_address', 'Karachi, Pakistan') ?></small>
+              <small>Karachi Pakistan – Sargodha Pakistan</small>
             </div>
             <div class="mb-2">
               <i class="fas fa-phone me-2"></i>
-              <small><?= getSetting('contact_phone', '+92-345-9123456') ?></small>
+              <small>+92-300-1234567 - +92-3306986088</small>
             </div>
             <div class="mb-2">
               <i class="fas fa-envelope me-2"></i>
-              <small><?= getSetting('contact_email', 'support@moxomart.com') ?></small>
+              <small>contact@moxomart.com – cheema@bytecraftsoft.com</small>
             </div>
             <div class="mb-2">
               <i class="fab fa-whatsapp me-2"></i>
@@ -127,7 +124,8 @@ $currentYear = date('Y');
         <div class="row align-items-center">
           <div class="col-md-6">
             <p class="mb-0 text-muted">
-              &copy; <?= $currentYear ?> <?= e($siteName) ?>. All rights reserved.
+              &copy; <?= $currentYear ?> <?= e($siteName) ?>. All rights reserved. | 
+              Developed and Powered by <a href="https://bytecraftsoft.com" target="_blank" class="text-muted">bytecraftsoft.com</a>
             </p>
           </div>
           <div class="col-md-6 text-md-end">

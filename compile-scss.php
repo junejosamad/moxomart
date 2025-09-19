@@ -14,13 +14,13 @@ try {
     
     // Set import paths
     $scss->setImportPaths([
-        'public/assets/css/',
+        'assets/css/',
         'vendor/twbs/bootstrap/scss/' // Bootstrap installed via Composer
     ]);
     
     // Read the SCSS file
-    $scssFile = 'public/assets/css/main.scss';
-    $cssFile = 'public/assets/css/main.min.css';
+    $scssFile = 'assets/css/main.scss';
+    $cssFile = 'assets/css/main.min.css';
     
     if (!file_exists($scssFile)) {
         die("Error: SCSS file not found: $scssFile\n");

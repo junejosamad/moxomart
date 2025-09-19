@@ -8,7 +8,7 @@ class Order extends Model
 {
     protected $table = 'orders';
     protected $fillable = [
-        'user_id', 'order_number', 'status', 'total_amount', 'shipping_amount',
+        'user_id', 'guest_email', 'guest_name', 'guest_phone', 'order_number', 'status', 'total_amount', 'shipping_amount',
         'tax_amount', 'discount_amount', 'payment_method', 'payment_status',
         'shipping_address', 'billing_address', 'notes'
     ];
@@ -104,6 +104,42 @@ class Order extends Model
 
             // Clear cart
             $cartModel->clearCart($userId);
+
+            $this->db->commit();
+            return $this->find($orderId);
+
+        } catch (\Exception $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+    }
+
+    public function createFromGuestCart($orderData, $cartItems, $guestData)
+    {
+        try {
+            $this->db->beginTransaction();
+
+            // Generate order number
+            $orderNumber = $this->generateOrderNumber();
+
+            // Create order for guest (user_id = null)
+            $orderData['order_number'] = $orderNumber;
+            $orderData['user_id'] = null; // Guest order
+            $orderData['status'] = self::STATUS_PENDING;
+            
+            // Add guest information to order data
+            $orderData['guest_email'] = $guestData['email'];
+            $orderData['guest_name'] = $guestData['first_name'] . ' ' . $guestData['last_name'];
+            $orderData['guest_phone'] = $guestData['phone'];
+            
+            $orderId = $this->create($orderData);
+
+            if (empty($cartItems)) {
+                throw new \Exception('Cart is empty');
+            }
+
+            // Create order items
+            $this->createOrderItems($orderId, $cartItems);
 
             $this->db->commit();
             return $this->find($orderId);

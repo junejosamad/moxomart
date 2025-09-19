@@ -16,7 +16,7 @@ class CheckoutController extends Controller
     public function __construct()
     {
         parent::__construct();
-        $this->requireAuth();
+        // Remove authentication requirement to allow guest checkout
         $this->cartModel = new Cart();
         $this->orderModel = new Order();
         $this->productModel = new Product();
@@ -25,7 +25,15 @@ class CheckoutController extends Controller
     public function index()
     {
         $user = getCurrentUser();
-        $cartItems = $this->cartModel->getCartItems($user['id']);
+        $isGuest = !$user;
+        
+        if ($isGuest) {
+            // Get cart items from session for guest users
+            $cartItems = $this->getSessionCartItems();
+        } else {
+            // Get cart items from database for logged-in users
+            $cartItems = $this->cartModel->getCartItems($user['id']);
+        }
         
         if (empty($cartItems)) {
             setFlash('error', 'Your cart is empty.');
@@ -44,8 +52,11 @@ class CheckoutController extends Controller
         $total = $subtotal + $shippingCost + $taxAmount - $discountAmount;
         $cartCount = count($cartItems);
 
-        // Get user addresses
-        $addresses = $this->getUserAddresses($user['id']);
+        // Get user addresses (only for logged-in users)
+        $addresses = [];
+        if (!$isGuest) {
+            $addresses = $this->getUserAddresses($user['id']);
+        }
         
         $meta = [
             'title' => 'Checkout - Moxo Mart',
@@ -62,6 +73,7 @@ class CheckoutController extends Controller
             'cartCount' => $cartCount,
             'addresses' => $addresses,
             'user' => $user,
+            'isGuest' => $isGuest,
             'meta' => $meta
         ]);
     }
@@ -69,13 +81,28 @@ class CheckoutController extends Controller
     public function process()
     {
         $user = getCurrentUser();
+        $isGuest = !$user;
 
-        // Validate input
-        $errors = validate($_POST, [
-            'payment_method' => 'required',
-            'billing_address_id' => 'required|numeric',
-            'shipping_address_id' => 'required|numeric'
-        ]);
+        // Validate input for guest checkout
+        if ($isGuest) {
+            $errors = validate($_POST, [
+                'first_name' => 'required|min:2',
+                'last_name' => 'required|min:2',
+                'email' => 'required|email',
+                'phone' => 'required',
+                'address' => 'required',
+                'city' => 'required',
+                'state' => 'required',
+                'postal_code' => 'required',
+                'payment_method' => 'required'
+            ]);
+        } else {
+            $errors = validate($_POST, [
+                'payment_method' => 'required',
+                'billing_address_id' => 'required|numeric',
+                'shipping_address_id' => 'required|numeric'
+            ]);
+        }
 
         // Validate payment method
         $allowedPaymentMethods = ['credit_card', 'paypal', 'cod', 'bank_transfer'];
@@ -83,37 +110,51 @@ class CheckoutController extends Controller
             $errors['payment_method'][] = 'Invalid payment method selected.';
         }
 
-        // Validate addresses belong to user
-        $billingAddressId = $_POST['billing_address_id'] ?? null;
-        $shippingAddressId = $_POST['shipping_address_id'] ?? null;
-        
-        // Handle new address creation
-        if ($billingAddressId === 'new') {
-            $billingAddress = $this->createAddressFromForm($_POST, $user['id'], 'billing');
-            if (!$billingAddress) {
-                $errors['billing_address_id'][] = 'Invalid billing address information.';
-            }
+        // Build or validate addresses
+        if ($isGuest) {
+            // Guest checkout – use form data directly without touching the DB
+            $billingAddress = $this->createGuestAddressFromForm($_POST, 'billing');
+            $shippingAddress = (isset($_POST['billing_same']) && $_POST['billing_same'])
+                ? $billingAddress
+                : $this->createGuestAddressFromForm($_POST, 'shipping');
         } else {
-            $billingAddress = $this->validateUserAddress($billingAddressId, $user['id']);
-            if (!$billingAddress) {
-                $errors['billing_address_id'][] = 'Invalid billing address.';
+            // Validate addresses belong to user
+            $billingAddressId = $_POST['billing_address_id'] ?? null;
+            $shippingAddressId = $_POST['shipping_address_id'] ?? null;
+
+            // Handle new address creation
+            if ($billingAddressId === 'new') {
+                $billingAddress = $this->createAddressFromForm($_POST, $user['id'], 'billing');
+                if (!$billingAddress) {
+                    $errors['billing_address_id'][] = 'Invalid billing address information.';
+                }
+            } else {
+                $billingAddress = $this->validateUserAddress($billingAddressId, $user['id']);
+                if (!$billingAddress) {
+                    $errors['billing_address_id'][] = 'Invalid billing address.';
+                }
             }
-        }
-        
-        if ($shippingAddressId === 'new') {
-            $shippingAddress = $this->createAddressFromForm($_POST, $user['id'], 'shipping');
-            if (!$shippingAddress) {
-                $errors['shipping_address_id'][] = 'Invalid shipping address information.';
-            }
-        } else {
-            $shippingAddress = $this->validateUserAddress($shippingAddressId, $user['id']);
-            if (!$shippingAddress) {
-                $errors['shipping_address_id'][] = 'Invalid shipping address.';
+
+            if ($shippingAddressId === 'new') {
+                $shippingAddress = $this->createAddressFromForm($_POST, $user['id'], 'shipping');
+                if (!$shippingAddress) {
+                    $errors['shipping_address_id'][] = 'Invalid shipping address information.';
+                }
+            } else {
+                $shippingAddress = $this->validateUserAddress($shippingAddressId, $user['id']);
+                if (!$shippingAddress) {
+                    $errors['shipping_address_id'][] = 'Invalid shipping address.';
+                }
             }
         }
 
         // Get cart items and validate
-        $cartItems = $this->cartModel->getCartItems($user['id']);
+        if ($isGuest) {
+            $cartItems = $this->getSessionCartItems();
+        } else {
+            $cartItems = $this->cartModel->getCartItems($user['id']);
+        }
+        
         if (empty($cartItems)) {
             setFlash('error', 'Your cart is empty.');
             return $this->redirect('/cart');
@@ -184,7 +225,11 @@ class CheckoutController extends Controller
             ];
 
             // Create order
-            $order = $this->orderModel->createFromCart($user['id'], $orderData);
+            if ($isGuest) {
+                $order = $this->orderModel->createFromGuestCart($orderData, $cartItems, $_POST);
+            } else {
+                $order = $this->orderModel->createFromCart($user['id'], $orderData);
+            }
             
             // Update product stock
             $this->updateProductStock($cartItems);
@@ -196,7 +241,13 @@ class CheckoutController extends Controller
                 // Update order status
                 $this->orderModel->updateStatus($order['id'], 'processing');
                 
-                logActivity('order_placed', "Order #{$order['order_number']} placed by user: {$user['email']}");
+                if ($isGuest) {
+                    logActivity('order_placed', "Order #{$order['order_number']} placed by guest: {$_POST['email']}");
+                    // Clear guest cart after successful order
+                    unset($_SESSION['cart']);
+                } else {
+                    logActivity('order_placed', "Order #{$order['order_number']} placed by user: {$user['email']}");
+                }
 
                 // Redirect to success page
                 $_SESSION['order_success'] = $order['id'];
@@ -227,7 +278,13 @@ class CheckoutController extends Controller
         $user = getCurrentUser();
         $order = $this->orderModel->getOrderWithItems($orderId);
 
-        if (!$order || $order['user_id'] != $user['id']) {
+        // Allow access for both logged-in users and guest orders
+        if (!$order) {
+            return $this->redirect('/');
+        }
+
+        // For logged-in users, verify ownership
+        if ($user && $order['user_id'] != $user['id']) {
             return $this->redirect('/');
         }
 
@@ -387,5 +444,48 @@ class CheckoutController extends Controller
     {
         // In a real application, this would integrate with PayPal API
         return ['success' => true, 'message' => 'PayPal payment processed'];
+    }
+
+    private function getSessionCartItems()
+    {
+        $items = [];
+        $sessionCart = $_SESSION['cart'] ?? [];
+        
+        foreach ($sessionCart as $key => $item) {
+            $product = $this->productModel->find($item['product_id']);
+            if ($product && $product['status'] === 'active') {
+                $items[] = [
+                    'product_id' => $item['product_id'],
+                    'name' => $product['name'],
+                    'price' => $product['price'],
+                    'quantity' => $item['quantity'],
+                    'subtotal' => $product['price'] * $item['quantity'],
+                    'image' => $product['image'] ?? null,
+                    'slug' => $product['slug']
+                ];
+            }
+        }
+        
+        return $items;
+    }
+
+    private function createGuestAddressFromForm($formData, $type)
+    {
+        // Create address array for guest users (not stored in database)
+        $address = [
+            'first_name' => $formData['first_name'],
+            'last_name' => $formData['last_name'],
+            'phone' => $formData['phone'],
+            'email' => $formData['email'],
+            'address_line_1' => $formData['address'],
+            'address_line_2' => $formData['address2'] ?? null,
+            'city' => $formData['city'],
+            'state' => $formData['state'],
+            'postal_code' => $formData['postal_code'],
+            'country' => 'Pakistan',
+            'type' => $type
+        ];
+
+        return $address;
     }
 } 

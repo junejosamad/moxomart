@@ -111,26 +111,26 @@ $currentUser = getCurrentUser();
   }
   </script>
 </head>
-<body>
+<body class="<?= isset($pageClass) ? $pageClass : '' ?>">
   <!-- Skip to main content for accessibility -->
   <a href="#main-content" class="visually-hidden-focusable">Skip to main content</a>
   
-  <!-- Top Bar -->
-  <div class="top-bar bg-dark text-white py-2">
+  <!-- Top Bar (hidden on mobile) -->
+  <div class="top-bar bg-dark text-white py-2 d-none d-lg-block">
     <div class="container">
       <div class="row align-items-center">
         <div class="col-md-6">
           <small>
             <i class="fas fa-phone me-2"></i>
-            Support: <?= getSetting('contact_phone', '+92-345-9123456') ?>
+            Support: +92-300-1234567 - +92-3306986088
           </small>
         </div>
         <div class="col-md-6 text-end">
           <small>
             <i class="fas fa-envelope me-2"></i>
-            <?= getSetting('contact_email', 'support@moxomart.com') ?>
+            contact@moxomart.com – cheema@bytecraftsoft.com
             <span class="mx-2">|</span>
-            <span>We made E-commerce Easy</span>
+            <span>Developed and Powered by <a href="https://bytecraftsoft.com" target="_blank" class="text-white">bytecraftsoft.com</a></span>
           </small>
         </div>
       </div>
@@ -169,19 +169,40 @@ $currentUser = getCurrentUser();
         </form>
       </div>
       
-      <!-- User Actions -->
-      <div class="d-flex align-items-center">
+      <!-- Mobile User Actions (visible only on mobile) -->
+      <div class="d-flex align-items-center d-lg-none mobile-user-actions">
+        <!-- Mobile Wishlist -->
+        <a class="nav-link me-2 position-relative mobile-action-btn" href="<?= url('wishlist') ?>" aria-label="Wishlist">
+          <i class="fas fa-heart fa-lg"></i>
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success mobile-badge">
+            0
+          </span>
+        </a>
+        
+        <!-- Mobile Shopping Cart -->
+        <a class="nav-link me-2 position-relative mobile-action-btn" href="<?= url('cart') ?>" aria-label="Shopping Cart">
+          <i class="fas fa-shopping-cart fa-lg"></i>
+          <?php if ($cartCount > 0): ?>
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success mobile-badge">
+            <?= $cartCount ?>
+          </span>
+          <?php endif; ?>
+        </a>
+        
         <!-- Mobile Menu Toggle -->
-        <button class="navbar-toggler d-lg-none me-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#mobileNavMenu" aria-controls="mobileNavMenu" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
-        
+      </div>
+
+      <!-- Desktop User Actions (hidden on mobile) -->
+      <div class="d-none d-lg-flex align-items-center">
         <!-- User Account -->
         <?php if ($currentUser): ?>
         <div class="dropdown me-3">
           <a class="nav-link dropdown-toggle d-flex align-items-center text-decoration-none" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="fas fa-user-circle fa-lg me-1"></i>
-            <div class="d-none d-md-block">
+            <div>
               <small class="text-muted d-block">My Account</small>
               <small class="fw-bold"><?= e($currentUser['first_name']) ?></small>
             </div>
@@ -201,7 +222,7 @@ $currentUser = getCurrentUser();
         <?php else: ?>
         <a class="nav-link me-3 d-flex align-items-center text-decoration-none" href="<?= url('login') ?>">
           <i class="fas fa-user-circle fa-lg me-1"></i>
-          <div class="d-none d-md-block">
+          <div>
             <small class="text-muted d-block">My Account</small>
             <small class="fw-bold">Login</small>
           </div>
@@ -211,19 +232,16 @@ $currentUser = getCurrentUser();
         <!-- Wishlist -->
         <a class="nav-link me-3 d-flex align-items-center text-decoration-none position-relative" href="<?= url('wishlist') ?>">
           <i class="fas fa-heart fa-lg me-1"></i>
-          <div class="d-none d-md-block">
+          <div>
             <small class="text-muted d-block">Wishlist</small>
             <small class="fw-bold">0</small>
           </div>
-          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success d-md-none">
-            0
-          </span>
         </a>
         
         <!-- Shopping Cart -->
         <a class="nav-link d-flex align-items-center text-decoration-none position-relative" href="<?= url('cart') ?>">
           <i class="fas fa-shopping-cart fa-lg me-1"></i>
-          <div class="d-none d-md-block">
+          <div>
             <small class="text-muted d-block">Cart</small>
             <small class="fw-bold"><?= $cartCount ?></small>
           </div>
@@ -236,12 +254,31 @@ $currentUser = getCurrentUser();
       </div>
     </div>
     
-    <!-- Mobile Navigation Menu -->
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <div class="container">
-        <!-- Mobile Search -->
-        <form class="d-lg-none my-3" action="<?= url('search') ?>" method="GET">
+  </nav>
+
+  <!-- Mobile Navigation Menu (Full Screen Overlay) -->
+  <div class="collapse navbar-collapse mobile-nav-menu" id="mobileNavMenu">
+    <div class="mobile-nav-content">
+      <!-- Mobile Header -->
+      <div class="mobile-nav-header">
+        <div class="d-flex justify-content-between align-items-center p-3">
+          <img src="<?= asset('images/logo.jpg') ?>" alt="<?= e($siteName) ?>" height="35">
+          <button type="button" class="btn-close mobile-nav-close" data-bs-toggle="collapse" data-bs-target="#mobileNavMenu" aria-label="Close"></button>
+        </div>
+      </div>
+      
+      <!-- Mobile Search -->
+      <div class="mobile-search p-3">
+        <form action="<?= url('search') ?>" method="GET">
           <div class="input-group">
+            <select class="form-select" name="category" style="max-width: 100px;">
+              <option value="">All</option>
+              <?php foreach ($categories as $category): ?>
+              <option value="<?= $category['id'] ?>" <?= ($_GET['category'] ?? '') == $category['id'] ? 'selected' : '' ?>>
+                <?= e($category['name']) ?>
+              </option>
+              <?php endforeach; ?>
+            </select>
             <input class="form-control" type="search" name="q" placeholder="Search products..." aria-label="Search" value="<?= e($_GET['q'] ?? '') ?>">
             <button class="btn btn-success" type="submit" aria-label="Search">
               <i class="fas fa-search"></i>
@@ -249,11 +286,97 @@ $currentUser = getCurrentUser();
           </div>
         </form>
       </div>
+
+      <!-- User Account Section -->
+      <div class="mobile-user-section">
+        <?php if ($currentUser): ?>
+        <div class="user-info p-3 bg-light">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-user-circle fa-2x me-3 text-success"></i>
+            <div>
+              <h6 class="mb-0">Welcome, <?= e($currentUser['first_name']) ?>!</h6>
+              <small class="text-muted"><?= e($currentUser['email']) ?></small>
+            </div>
+          </div>
+        </div>
+        <ul class="mobile-nav-links">
+          <li><a href="<?= url('dashboard') ?>"><i class="fas fa-tachometer-alt me-3"></i>Dashboard</a></li>
+          <li><a href="<?= url('dashboard/orders') ?>"><i class="fas fa-box me-3"></i>My Orders</a></li>
+          <li><a href="<?= url('dashboard/profile') ?>"><i class="fas fa-user-edit me-3"></i>Profile</a></li>
+          <?php if (isAdmin()): ?>
+          <li><a href="<?= url('admin') ?>"><i class="fas fa-cog me-3"></i>Admin Panel</a></li>
+          <?php endif; ?>
+          <li><a href="<?= url('logout') ?>" class="text-danger"><i class="fas fa-sign-out-alt me-3"></i>Logout</a></li>
+        </ul>
+        <?php else: ?>
+        <div class="login-section p-3">
+          <a href="<?= url('login') ?>" class="btn btn-success w-100 mb-2">
+            <i class="fas fa-sign-in-alt me-2"></i>Login
+          </a>
+          <a href="<?= url('register') ?>" class="btn btn-outline-success w-100">
+            <i class="fas fa-user-plus me-2"></i>Register
+          </a>
+        </div>
+        <?php endif; ?>
+      </div>
+
+      <!-- Navigation Links -->
+      <ul class="mobile-nav-links">
+        <li><a href="<?= url() ?>" class="<?= $_SERVER['REQUEST_URI'] === '/' ? 'active' : '' ?>"><i class="fas fa-home me-3"></i>Home</a></li>
+        <li><a href="<?= url('products') ?>" class="<?= strpos($_SERVER['REQUEST_URI'], '/products') === 0 ? 'active' : '' ?>"><i class="fas fa-shopping-bag me-3"></i>Shop</a></li>
+        <li>
+          <a href="#" class="mobile-nav-toggle" data-target="categories">
+            <i class="fas fa-list me-3"></i>Categories
+            <i class="fas fa-chevron-down ms-auto"></i>
+          </a>
+          <ul class="mobile-nav-submenu" id="categories">
+            <?php foreach ($categories as $category): ?>
+            <li><a href="<?= url('products/category/' . $category['slug']) ?>"><?= e($category['name']) ?></a></li>
+            <?php endforeach; ?>
+          </ul>
+        </li>
+        <li><a href="<?= url('wishlist') ?>"><i class="fas fa-heart me-3"></i>Wishlist <span class="badge bg-success ms-auto">0</span></a></li>
+        <li><a href="<?= url('cart') ?>"><i class="fas fa-shopping-cart me-3"></i>Cart <span class="badge bg-success ms-auto"><?= $cartCount ?></span></a></li>
+        <li><a href="<?= url('contact') ?>"><i class="fas fa-phone me-3"></i>Contact</a></li>
+      </ul>
+
+      <!-- Mobile Footer -->
+      <div class="mobile-nav-footer p-3 mt-auto">
+        <div class="text-center">
+          <div class="mb-2">
+            <small class="text-muted">Follow us:</small>
+          </div>
+          <div class="d-flex justify-content-center gap-3">
+            <a href="<?= getSetting('social_facebook', '#') ?>" class="text-muted">
+              <i class="fab fa-facebook-f fa-lg"></i>
+            </a>
+            <a href="<?= getSetting('social_twitter', '#') ?>" class="text-muted">
+              <i class="fab fa-twitter fa-lg"></i>
+            </a>
+            <a href="<?= getSetting('social_instagram', '#') ?>" class="text-muted">
+              <i class="fab fa-instagram fa-lg"></i>
+            </a>
+            <a href="<?= getSetting('social_whatsapp', '#') ?>" class="text-muted">
+              <i class="fab fa-whatsapp fa-lg"></i>
+            </a>
+          </div>
+          <div class="mt-2">
+            <small class="text-muted">
+              <i class="fas fa-phone me-1"></i>+92-300-1234567
+            </small>
+          </div>
+        </div>
+      </div>
     </div>
-  </nav>
+  </div>
+
+  <!-- Mobile Navigation Overlay -->
+  <div class="mobile-nav-overlay d-lg-none"></div>
+
+  <!-- Standard Navigation (keeping the category nav for desktop) -->
   
-  <!-- Category Navigation Bar -->
-  <div class="category-nav bg-success">
+  <!-- Category Navigation Bar (hidden on mobile) -->
+  <div class="category-nav bg-success d-none d-lg-block">
     <div class="container">
       <div class="row align-items-center">
         <div class="col-md-3">
@@ -278,24 +401,6 @@ $currentUser = getCurrentUser();
             </li>
             <li class="nav-item">
               <a class="nav-link text-white <?= strpos($_SERVER['REQUEST_URI'], '/products') === 0 ? 'active' : '' ?>" href="<?= url('products') ?>">Shop</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-white" href="<?= url('how-to') ?>">How to</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-white" href="<?= url('fbs') ?>">FBS</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-white" href="<?= url('affiliate') ?>">Affiliate Program</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-white" href="<?= url('faq') ?>">FAQ</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-white <?= strpos($_SERVER['REQUEST_URI'], '/blog') === 0 ? 'active' : '' ?>" href="<?= url('blog') ?>">Blog</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-white" href="<?= url('knowledge-base') ?>">Knowledge Base</a>
             </li>
           </ul>
         </div>

@@ -1,0 +1,81 @@
+CPANEL DEPLOYMENT GUIDE - NO .HTACCESS REQUIRED
+================================================
+
+Since .htaccess is not working on your hosting, follow these steps:
+
+STEP 1: Restructure Files for cPanel
+------------------------------------
+1. Upload ALL files to your public_html directory (not just public/)
+2. Move the contents of public/ to the root of public_html/
+3. Update file paths in your application
+
+STEP 2: Create New Entry Point
+------------------------------
+Create a new index.php in your public_html root:
+
+<?php
+// Simple entry point for cPanel
+require_once 'vendor/autoload.php';
+
+// Load environment
+if (file_exists('.env')) {
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+    $dotenv->load();
+}
+
+// Start session
+session_start();
+
+// Load helpers
+require_once 'app/Core/helpers.php';
+
+// Initialize router
+$router = new App\Core\Router();
+
+// Load routes
+require_once 'config/routes.php';
+loadRoutes($router);
+
+// Handle request
+try {
+    $router->handleRequest();
+} catch (Exception $e) {
+    if (($_ENV['APP_ENV'] ?? 'production') === 'development') {
+        echo '<h1>Error</h1>';
+        echo '<p>' . $e->getMessage() . '</p>';
+    } else {
+        http_response_code(500);
+        include 'app/Views/errors/500.php';
+    }
+}
+?>
+
+STEP 3: Update Asset Paths
+--------------------------
+In app/Core/helpers.php, update the asset() function:
+
+function asset($path) {
+    $path = ltrim($path, '/');
+    $baseUrl = $_ENV['APP_URL'] ?? 'http://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
+    
+    // For cPanel, assets are in the root
+    return rtrim($baseUrl, '/') . '/assets/' . $path;
+}
+
+STEP 4: Test the Setup
+----------------------
+1. Upload all files to public_html
+2. Visit your domain
+3. Check if CSS loads at: yourdomain.com/assets/css/main.min.css
+
+STEP 5: If Still Not Working
+----------------------------
+Contact your hosting provider and ask:
+1. "Is mod_rewrite enabled?"
+2. "Are .htaccess files allowed?"
+3. "What are the server requirements for URL rewriting?"
+
+Alternative: Use subdomain
+- Create a subdomain like "app.yourdomain.com"
+- Upload files there
+- Sometimes subdomains have different server configurations 

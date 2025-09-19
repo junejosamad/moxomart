@@ -74,7 +74,7 @@ include APP_PATH . '/Views/layouts/header.php';
                 </div>
                 <div class="card-body">
                     <?php foreach ($order['items'] as $item): ?>
-                        <div class="row align-items-center mb-3 pb-3 <?= !$loop->last ? 'border-bottom' : '' ?>">
+                        <div class="row align-items-center mb-3 pb-3 border-bottom">
                             <div class="col-md-2">
                                 <img src="<?= $item['image'] ?? '/assets/images/placeholder.jpg' ?>" 
                                      alt="<?= htmlspecialchars($item['name']) ?>" 
@@ -82,7 +82,9 @@ include APP_PATH . '/Views/layouts/header.php';
                             </div>
                             <div class="col-md-6">
                                 <h6 class="mb-1"><?= htmlspecialchars($item['name']) ?></h6>
-                                <p class="text-muted mb-0"><?= htmlspecialchars($item['description']) ?></p>
+                                <?php if(isset($item['description']) && $item['description']): ?>
+                                    <p class="text-muted mb-0"><?= htmlspecialchars($item['description']) ?></p>
+                                <?php endif; ?>
                             </div>
                             <div class="col-md-2 text-center">
                                 <span class="fw-bold">Qty: <?= $item['quantity'] ?></span>

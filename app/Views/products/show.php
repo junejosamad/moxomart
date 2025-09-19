@@ -26,6 +26,9 @@ if (!isset($meta)) {
     ];
 }
 
+// Set page class for styling
+$pageClass = 'product-detail-page';
+
 // Include header with proper variable scope
 include APP_PATH . '/Views/layouts/header.php';
 ?>
@@ -358,11 +361,20 @@ include APP_PATH . '/Views/layouts/header.php';
               </div>
             </div>
             <div class="col-md-8 col-12">
-              <button type="submit" class="btn btn-primary btn-lg w-100" 
-                      <?= $product['stock_quantity'] <= 0 ? 'disabled' : '' ?>>
-                <i class="fas fa-cart-plus me-2"></i>
-                <?= $product['stock_quantity'] > 0 ? 'Add to Cart' : 'Out of Stock' ?>
-              </button>
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-outline-primary btn-lg flex-fill" 
+                        <?= $product['stock_quantity'] <= 0 ? 'disabled' : '' ?>>
+                  <i class="fas fa-cart-plus me-2"></i>
+                  <?= $product['stock_quantity'] > 0 ? 'Add to Cart' : 'Out of Stock' ?>
+                </button>
+                <button type="button" class="btn btn-primary btn-lg buy-now-btn" 
+                        data-product-id="<?= $product['id'] ?>" 
+                        data-quantity="1"
+                        <?= $product['stock_quantity'] <= 0 ? 'disabled' : '' ?>>
+                  <i class="fas fa-shopping-cart me-2"></i>
+                  Buy Now
+                </button>
+              </div>
             </div>
           </div>
         </form>
@@ -715,6 +727,143 @@ include APP_PATH . '/Views/layouts/header.php';
         }
       });
   }
-</script>
+  </script>
+
+  <!-- Sticky Bottom Bar for Mobile -->
+  <div class="sticky-bottom-bar d-lg-none">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-3">
+          <div class="quantity-controls">
+            <div class="input-group input-group-sm">
+              <button type="button" class="btn btn-outline-secondary btn-sm" onclick="decreaseMobileQuantity()">-</button>
+              <input type="number" id="mobile-quantity" class="form-control form-control-sm text-center" 
+                     value="1" min="1" max="<?= $product['stock_quantity'] ?>" 
+                     <?= $product['stock_quantity'] <= 0 ? 'disabled' : '' ?>>
+              <button type="button" class="btn btn-outline-secondary btn-sm" onclick="increaseMobileQuantity()">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-9">
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-success flex-fill mobile-add-to-cart-btn" 
+                    data-product-id="<?= $product['id'] ?>"
+                    <?= $product['stock_quantity'] <= 0 ? 'disabled' : '' ?>>
+              <i class="fas fa-cart-plus me-1"></i>
+              Add to Cart
+            </button>
+            <button type="button" class="btn btn-success flex-fill mobile-buy-now-btn" 
+                    data-product-id="<?= $product['id'] ?>"
+                    <?= $product['stock_quantity'] <= 0 ? 'disabled' : '' ?>>
+              <i class="fas fa-shopping-cart me-1"></i>
+              Buy Now
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Mobile quantity controls
+    function decreaseMobileQuantity() {
+      const input = document.getElementById('mobile-quantity');
+      const currentValue = parseInt(input.value);
+      if (currentValue > 1) {
+        input.value = currentValue - 1;
+        // Sync with desktop quantity input
+        const desktopInput = document.getElementById('quantity');
+        if (desktopInput) {
+          desktopInput.value = input.value;
+        }
+      }
+    }
+
+    function increaseMobileQuantity() {
+      const input = document.getElementById('mobile-quantity');
+      const currentValue = parseInt(input.value);
+      const maxValue = parseInt(input.getAttribute('max'));
+      if (currentValue < maxValue) {
+        input.value = currentValue + 1;
+        // Sync with desktop quantity input
+        const desktopInput = document.getElementById('quantity');
+        if (desktopInput) {
+          desktopInput.value = input.value;
+        }
+      }
+    }
+
+    // Sync quantity inputs
+    document.addEventListener('DOMContentLoaded', function() {
+      const mobileQuantity = document.getElementById('mobile-quantity');
+      const desktopQuantity = document.getElementById('quantity');
+      
+      if (mobileQuantity && desktopQuantity) {
+        // Sync mobile to desktop
+        mobileQuantity.addEventListener('change', function() {
+          desktopQuantity.value = this.value;
+        });
+        
+        // Sync desktop to mobile
+        desktopQuantity.addEventListener('change', function() {
+          mobileQuantity.value = this.value;
+        });
+      }
+    });
+
+    // Mobile add to cart
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('mobile-add-to-cart-btn') || e.target.closest('.mobile-add-to-cart-btn')) {
+        e.preventDefault();
+        const button = e.target.classList.contains('mobile-add-to-cart-btn') ? e.target : e.target.closest('.mobile-add-to-cart-btn');
+        const productId = button.getAttribute('data-product-id');
+        const quantity = document.getElementById('mobile-quantity').value || 1;
+        
+        // Show loading state
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>';
+        button.disabled = true;
+        
+        // Create form data
+        const formData = new FormData();
+        formData.append('product_id', productId);
+        formData.append('quantity', quantity);
+        formData.append('<?= csrfTokenName() ?>', '<?= csrfTokenValue() ?>');
+        
+        fetch('<?= url("cart/add") ?>', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            showAlert('success', 'Added to cart!');
+            updateCartCount();
+          } else {
+            showAlert('error', data.message || 'Failed to add to cart');
+          }
+        })
+        .catch(error => {
+          showAlert('error', 'An error occurred');
+        })
+        .finally(() => {
+          button.innerHTML = originalText;
+          button.disabled = false;
+        });
+      }
+    });
+
+    // Mobile buy now
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('mobile-buy-now-btn') || e.target.closest('.mobile-buy-now-btn')) {
+        e.preventDefault();
+        const button = e.target.classList.contains('mobile-buy-now-btn') ? e.target : e.target.closest('.mobile-buy-now-btn');
+        const productId = button.getAttribute('data-product-id');
+        const quantity = document.getElementById('mobile-quantity').value || 1;
+        
+        window.location.href = `<?= url('checkout') ?>?product=${productId}&quantity=${quantity}`;
+      }
+    });
+  </script>
 
 <?php include APP_PATH . '/Views/layouts/footer.php'; ?>

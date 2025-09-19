@@ -12,9 +12,20 @@ function url($path = '') {
     
     // Auto-detect base URL if not set in environment
     if (!$baseUrl) {
-        // Force HTTP for now since HTTPS redirect is causing issues
         $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-        $baseUrl = 'http://' . $host;
+        // Use HTTPS if the request is secure, otherwise HTTP
+        $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
+        
+        // Get the folder path from SCRIPT_NAME
+        $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+        $folderPath = dirname($scriptName);
+        
+        // If we're in a subfolder, include it in the base URL
+        if ($folderPath !== '/' && $folderPath !== '') {
+            $baseUrl = $protocol . '://' . $host . $folderPath;
+        } else {
+            $baseUrl = $protocol . '://' . $host;
+        }
     }
     
     return rtrim($baseUrl, '/') . '/' . ltrim($path, '/');
@@ -24,14 +35,25 @@ function asset($path) {
     // Clean the path
     $path = ltrim($path, '/');
     
-    // Get base URL - force HTTP for now
+    // Get base URL from environment or auto-detect
     $baseUrl = $_ENV['APP_URL'] ?? null;
     
     // Auto-detect base URL if not set in environment
     if (!$baseUrl) {
-        // Force HTTP since HTTPS redirects are causing issues
         $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-        $baseUrl = 'http://' . $host;
+        // Use HTTPS if the request is secure, otherwise HTTP
+        $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
+        
+        // Get the folder path from SCRIPT_NAME
+        $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+        $folderPath = dirname($scriptName);
+        
+        // If we're in a subfolder, include it in the base URL
+        if ($folderPath !== '/' && $folderPath !== '') {
+            $baseUrl = $protocol . '://' . $host . $folderPath;
+        } else {
+            $baseUrl = $protocol . '://' . $host;
+        }
     }
     
     // Ensure we don't have double /assets/ in the path

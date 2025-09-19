@@ -23,11 +23,11 @@ $router->post('/cart/apply-coupon', 'CartController@applyCoupon', ['csrf']);
 $router->get('/cart/mini', 'CartController@mini');
 $router->get('/cart/count', 'CartController@count');
     
-    // Checkout routes (require auth and CSRF)
-    $router->get('/checkout', 'CheckoutController@index', ['auth']);
-    $router->post('/checkout/process', 'CheckoutController@process', ['auth', 'csrf']);
-    $router->get('/checkout/success', 'CheckoutController@success', ['auth']);
-    $router->get('/checkout/cancel', 'CheckoutController@cancel', ['auth']);
+    // Checkout routes (support guest checkout)
+    $router->get('/checkout', 'CheckoutController@index');
+    $router->post('/checkout/process', 'CheckoutController@process', ['csrf']);
+    $router->get('/checkout/success', 'CheckoutController@success');
+    $router->get('/checkout/cancel', 'CheckoutController@cancel');
     
     // Auth routes (guest only for login/register)
     $router->get('/login', 'AuthController@showLogin', ['guest']);

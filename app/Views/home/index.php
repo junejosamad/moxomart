@@ -27,21 +27,12 @@ include APP_PATH . '/Views/layouts/header.php';
           </ul>
           
           <div class="hero-buttons">
-            <?php if (!$currentUser): ?>
-            <a href="<?= url('register') ?>" class="btn btn-warning btn-lg me-3">
-              REGISTER NOW
-            </a>
-            <a href="<?= url('login') ?>" class="btn btn-dark btn-lg">
-              SIGN IN
-            </a>
-            <?php else: ?>
             <a href="<?= url('products') ?>" class="btn btn-warning btn-lg me-3">
               SHOP NOW
             </a>
-            <a href="<?= url('dashboard') ?>" class="btn btn-dark btn-lg">
-              MY DASHBOARD
+            <a href="<?= url('contact') ?>" class="btn btn-dark btn-lg">
+              CONTACT US
             </a>
-            <?php endif; ?>
           </div>
         </div>
       </div>
@@ -70,6 +61,7 @@ include APP_PATH . '/Views/layouts/header.php';
       <?php foreach ($featuredProducts as $index => $product): ?>
       <div class="col-lg-3 col-md-6">
         <div class="product-card bg-white shadow-sm h-100">
+          <a href="<?= url('products/' . $product['slug']) ?>" class="text-decoration-none">
           <div class="product-image position-relative">
             <?php
             $productModel = new App\Models\Product();
@@ -86,9 +78,6 @@ include APP_PATH . '/Views/layouts/header.php';
             
             <div class="product-overlay">
               <div class="btn-group">
-                <a href="<?= url('products/' . $product['slug']) ?>" class="btn btn-light">
-                  <i class="fas fa-eye"></i> View
-                </a>
                 <button type="button" class="btn btn-light add-to-cart-btn" 
                         data-product-id="<?= $product['id'] ?>" 
                         <?= $product['stock_quantity'] <= 0 ? 'disabled' : '' ?>>
@@ -119,16 +108,23 @@ include APP_PATH . '/Views/layouts/header.php';
               <?php endif; ?>
             </div>
             
-            <form class="add-to-cart-form" data-product-id="<?= $product['id'] ?>">
-              <?= csrfField() ?>
-              <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
-              <input type="hidden" name="quantity" value="1">
-              <button type="submit" class="btn btn-success w-100" <?= $product['stock_quantity'] <= 0 ? 'disabled' : '' ?>>
-                <i class="fas fa-cart-plus me-2"></i>
-                <?= $product['stock_quantity'] > 0 ? 'Add to Cart' : 'Out of Stock' ?>
-              </button>
-            </form>
+            <div class="d-flex gap-2">
+              <form class="add-to-cart-form flex-fill" data-product-id="<?= $product['id'] ?>">
+                <?= csrfField() ?>
+                <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
+                <input type="hidden" name="quantity" value="1">
+                <button type="submit" class="btn btn-outline-success w-100" <?= $product['stock_quantity'] <= 0 ? 'disabled' : '' ?>>
+                  <i class="fas fa-cart-plus me-2"></i>
+                  <?= $product['stock_quantity'] > 0 ? 'Add to Cart' : 'Out of Stock' ?>
+                </button>
+              </form>
+              <a href="<?= url('checkout?product=' . $product['id'] . '&quantity=1') ?>" class="btn btn-success" <?= $product['stock_quantity'] <= 0 ? 'onclick="return false;"' : '' ?>>
+                <i class="fas fa-shopping-cart me-2"></i>
+                Buy Now
+              </a>
+            </div>
           </div>
+          </a>
         </div>
       </div>
       <?php endforeach; ?>
@@ -216,61 +212,7 @@ include APP_PATH . '/Views/layouts/header.php';
   </div>
 </section>
 
-<!-- Recent Blog Posts Section -->
-<?php if (!empty($recentPosts)): ?>
-<section class="blog-section py-5">
-  <div class="container">
-    <div class="row mb-5">
-      <div class="col-12 text-center">
-        <h2 class="display-5 fw-bold mb-3">Latest from Our Blog</h2>
-        <p class="lead text-muted">
-          Stay updated with the latest news, tips, and insights
-        </p>
-      </div>
-    </div>
-    
-    <div class="row g-4">
-      <?php foreach ($recentPosts as $index => $post): ?>
-      <div class="col-lg-4">
-        <article class="blog-card bg-white rounded-3 shadow-sm overflow-hidden h-100">
-          <div class="blog-image">
-            <img src="<?= $post['featured_image'] ? asset($post['featured_image']) : asset('images/placeholder-blog.jpg') ?>" 
-                 alt="<?= e($post['title']) ?>" class="img-fluid w-100" style="height: 200px; object-fit: cover;">
-          </div>
-          <div class="blog-content p-4">
-            <div class="blog-meta mb-2">
-              <small class="text-muted">
-                <i class="fas fa-calendar me-1"></i>
-                <?= formatDate($post['published_at']) ?>
-              </small>
-            </div>
-            <h5 class="blog-title mb-3">
-              <a href="<?= url('blog/' . $post['slug']) ?>" class="text-decoration-none text-dark">
-                <?= e($post['title']) ?>
-              </a>
-            </h5>
-            <p class="blog-excerpt text-muted mb-3">
-              <?= e(truncate($post['excerpt'], 120)) ?>
-            </p>
-            <a href="<?= url('blog/' . $post['slug']) ?>" class="btn btn-outline-success btn-sm">
-              Read More
-              <i class="fas fa-arrow-right ms-1"></i>
-            </a>
-          </div>
-        </article>
-      </div>
-      <?php endforeach; ?>
-    </div>
-    
-    <div class="text-center mt-5">
-      <a href="<?= url('blog') ?>" class="btn btn-success btn-lg">
-        View All Posts
-        <i class="fas fa-arrow-right ms-2"></i>
-      </a>
-    </div>
-  </div>
-</section>
-<?php endif; ?>
+
 
 <!-- CTA Section -->
 <section class="cta-section bg-success text-white py-5">
@@ -283,17 +225,10 @@ include APP_PATH . '/Views/layouts/header.php';
         </p>
       </div>
       <div class="col-lg-4 text-lg-end">
-        <?php if (!$currentUser): ?>
-        <a href="<?= url('register') ?>" class="btn btn-warning btn-lg">
-          Register Now
-          <i class="fas fa-user-plus ms-2"></i>
-        </a>
-        <?php else: ?>
         <a href="<?= url('products') ?>" class="btn btn-warning btn-lg">
           Shop Now
           <i class="fas fa-shopping-cart ms-2"></i>
         </a>
-        <?php endif; ?>
       </div>
     </div>
   </div>

@@ -510,20 +510,7 @@ class AdminController extends Controller
 //     private $orderModel;
 //     private $reviewModel;
 
-    public function __construct()
-    {
-        parent::__construct();
-        $this->userModel = new User();
-        $this->productModel = new Product();
-        $this->categoryModel = new Category();
-        $this->orderModel = new Order();
-        $this->reviewModel = new Review();
-        
-        // Check if user is admin
-        if (!isset($_SESSION['user_id']) || !isset($_SESSION['is_admin']) || !$_SESSION['is_admin']) {
-            redirect('/auth/login');
-        }
-    }
+
 
     /**
      * Category management

@@ -77,7 +77,7 @@ include APP_PATH . '/Views/layouts/header.php';
                     <td class="align-middle">
                       <div class="quantity-controls d-flex align-items-center">
                         <button type="button" class="btn btn-outline-secondary btn-sm" 
-                                onclick="updateQuantity(<?= $item['product_id'] ?>, <?= $item['quantity'] - 1 ?>)">
+                                onclick="updateQuantity(<?= $item['product_id'] ?>, parseInt(this.parentNode.querySelector('input').value) - 1)">
                           -
                         </button>
                         <input type="number" class="form-control form-control-sm mx-2 text-center" 
@@ -87,7 +87,7 @@ include APP_PATH . '/Views/layouts/header.php';
                                max="<?= $item['stock_quantity'] ?>"
                                onchange="updateQuantity(<?= $item['product_id'] ?>, this.value)">
                         <button type="button" class="btn btn-outline-secondary btn-sm" 
-                                onclick="updateQuantity(<?= $item['product_id'] ?>, <?= $item['quantity'] + 1 ?>)"
+                                onclick="updateQuantity(<?= $item['product_id'] ?>, parseInt(this.parentNode.querySelector('input').value) + 1)"
                                 <?= $item['quantity'] >= $item['stock_quantity'] ? 'disabled' : '' ?>>
                           +
                         </button>

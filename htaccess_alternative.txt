@@ -1,0 +1,6 @@
+# Alternative .htaccess approach
+Options +FollowSymLinks
+RewriteEngine On
+
+# Simple redirect test
+RewriteRule ^test$ test.php [L] 

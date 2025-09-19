@@ -1,0 +1,24 @@
+# Environment Configuration for cPanel
+APP_ENV=production
+APP_URL=https://moxomart.store
+
+# Database Configuration (update with your actual cPanel database credentials)
+DB_HOST=localhost
+DB_DATABASE=dealbite_moxomart
+DB_USERNAME=dealbite_moxomart
+DB_PASSWORD=JvyrhF!cH[,wa7cR
+
+# Session Configuration
+SESSION_LIFETIME=7200
+SESSION_SECURE=true
+SESSION_HTTP_ONLY=true
+
+# Security Keys
+APP_KEY=moxo_mart_secret_key_change_in_production
+CSRF_SECRET=csrf_secret_key_change_in_production
+
+# Mail Configuration (optional)
+MAIL_DRIVER=smtp
+MAIL_HOST=mail.moxomart.store
+MAIL_PORT=465
+MAIL_FROM_NAME=MoxoMart 

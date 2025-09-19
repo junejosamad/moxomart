@@ -1,0 +1,13 @@
+RewriteEngine On
+
+# Handle assets first - serve CSS, JS, images directly
+RewriteCond %{REQUEST_URI} \.(css|js|png|jpg|jpeg|gif|svg|ico)$ [NC]
+RewriteRule ^assets/(.*)$ public/assets/$1 [L]
+
+# Handle existing files and directories
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# All other requests go to the main application
+RewriteRule ^(.*)$ public/index.php [QSA,L] 
